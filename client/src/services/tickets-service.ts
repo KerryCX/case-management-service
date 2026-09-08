@@ -1,9 +1,9 @@
 import type {
-  Case,
-  CreateCaseInput,
+  CreateTicketInput,
   StatusFilter,
-  UpdateCaseInput,
-} from "../types/case";
+  Ticket,
+  UpdateTicketInput,
+} from "../types/ticket";
 
 /* All error handling lives here: every function below turns a failed
 response into a thrown Error with a clean, readable message. Components
@@ -29,37 +29,39 @@ const throwIfNotOk = async (response: Response): Promise<void> => {
   }
 };
 
-export const fetchCases = async (filter: StatusFilter): Promise<Case[]> => {
+export const fetchTickets = async (filter: StatusFilter): Promise<Ticket[]> => {
   const query = filter === "all" ? "" : `?status=${filter}`;
-  const response = await fetch(`/cases${query}`);
+  const response = await fetch(`/tickets${query}`);
   await throwIfNotOk(response);
-  return (await response.json()) as Case[];
+  return (await response.json()) as Ticket[];
 };
 
-export const createCase = async (input: CreateCaseInput): Promise<Case> => {
-  const response = await fetch("/cases", {
+export const createTicket = async (
+  input: CreateTicketInput,
+): Promise<Ticket> => {
+  const response = await fetch("/tickets", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   });
   await throwIfNotOk(response);
-  return (await response.json()) as Case;
+  return (await response.json()) as Ticket;
 };
 
-export const updateCase = async (
+export const updateTicket = async (
   id: string,
-  input: UpdateCaseInput,
-): Promise<Case> => {
-  const response = await fetch(`/cases/${id}`, {
+  input: UpdateTicketInput,
+): Promise<Ticket> => {
+  const response = await fetch(`/tickets/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   });
   await throwIfNotOk(response);
-  return (await response.json()) as Case;
+  return (await response.json()) as Ticket;
 };
 
-export const deleteCase = async (id: string): Promise<void> => {
-  const response = await fetch(`/cases/${id}`, { method: "DELETE" });
+export const deleteTicket = async (id: string): Promise<void> => {
+  const response = await fetch(`/tickets/${id}`, { method: "DELETE" });
   await throwIfNotOk(response);
 };

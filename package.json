@@ -1,7 +1,7 @@
 {
   "name": "case-management-service",
   "version": "1.0.0",
-  "description": "RESTful case management API",
+  "description": "TicketZero: a RESTful support ticket API with a GTD-inspired workflow",
   "main": "dist/index.js",
   "scripts": {
     "build": "npm install --prefix client && npm run build --prefix client && tsc",

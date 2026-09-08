@@ -1,18 +1,18 @@
 import { useId, useState } from "react";
 import {
-  CASE_PRIORITIES,
-  CASE_STATUSES,
-  type Case,
-  type CasePriority,
-  type CaseStatus,
-} from "../../types/case";
-import { deleteCase, updateCase } from "../../services/cases-service";
+  TICKET_PRIORITIES,
+  TICKET_STATUSES,
+  type Ticket,
+  type TicketPriority,
+  type TicketStatus,
+} from "../../types/ticket";
+import { deleteTicket, updateTicket } from "../../services/tickets-service";
 import { StatusBadge } from "../status-badge/status-badge";
-import styles from "./case-item.module.css";
+import styles from "./ticket-item.module.css";
 
-interface CaseItemProps {
-  caseItem: Case;
-  onUpdated: (updated: Case) => void;
+interface TicketItemProps {
+  ticket: Ticket;
+  onUpdated: (updated: Ticket) => void;
   onDeleted: (id: string) => void;
 }
 
@@ -23,11 +23,11 @@ const formatDate = (iso: string): string =>
     day: "numeric",
   });
 
-export const CaseItem = ({
-  caseItem,
+export const TicketItem = ({
+  ticket,
   onUpdated,
   onDeleted,
-}: CaseItemProps): React.JSX.Element => {
+}: TicketItemProps): React.JSX.Element => {
   const titleId = useId();
   const statusId = useId();
   const priorityId = useId();
@@ -38,16 +38,16 @@ export const CaseItem = ({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [title, setTitle] = useState(caseItem.title);
-  const [status, setStatus] = useState<CaseStatus>(caseItem.status);
-  const [priority, setPriority] = useState<CasePriority>(caseItem.priority);
-  const [assignee, setAssignee] = useState(caseItem.assignee ?? "");
+  const [title, setTitle] = useState(ticket.title);
+  const [status, setStatus] = useState<TicketStatus>(ticket.status);
+  const [priority, setPriority] = useState<TicketPriority>(ticket.priority);
+  const [assignee, setAssignee] = useState(ticket.assignee ?? "");
 
   const startEditing = (): void => {
-    setTitle(caseItem.title);
-    setStatus(caseItem.status);
-    setPriority(caseItem.priority);
-    setAssignee(caseItem.assignee ?? "");
+    setTitle(ticket.title);
+    setStatus(ticket.status);
+    setPriority(ticket.priority);
+    setAssignee(ticket.assignee ?? "");
     setError(null);
     setIsEditing(true);
   };
@@ -58,7 +58,7 @@ export const CaseItem = ({
     event.preventDefault();
 
     if (title.trim() === "") {
-      setError("Title cannot be empty");
+      setError("Subject cannot be empty");
       return;
     }
 
@@ -66,7 +66,7 @@ export const CaseItem = ({
     setError(null);
 
     try {
-      const updated = await updateCase(caseItem.id, {
+      const updated = await updateTicket(ticket.id, {
         title: title.trim(),
         status,
         priority,
@@ -75,7 +75,7 @@ export const CaseItem = ({
       onUpdated(updated);
       setIsEditing(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update case");
+      setError(err instanceof Error ? err.message : "Failed to update ticket");
     } finally {
       setSubmitting(false);
     }
@@ -86,10 +86,10 @@ export const CaseItem = ({
     setError(null);
 
     try {
-      await deleteCase(caseItem.id);
-      onDeleted(caseItem.id);
+      await deleteTicket(ticket.id);
+      onDeleted(ticket.id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete case");
+      setError(err instanceof Error ? err.message : "Failed to delete ticket");
       setSubmitting(false);
       setConfirmingDelete(false);
     }
@@ -100,7 +100,7 @@ export const CaseItem = ({
       <li className={styles.item}>
         <form onSubmit={handleSave} className={styles.editForm}>
           <div className={styles.field}>
-            <label htmlFor={titleId}>Title</label>
+            <label htmlFor={titleId}>Subject</label>
             <input
               id={titleId}
               type="text"
@@ -117,10 +117,10 @@ export const CaseItem = ({
                 id={statusId}
                 value={status}
                 onChange={(event) =>
-                  setStatus(event.target.value as CaseStatus)
+                  setStatus(event.target.value as TicketStatus)
                 }
               >
-                {CASE_STATUSES.map((option) => (
+                {TICKET_STATUSES.map((option) => (
                   <option key={option} value={option}>
                     {option}
                   </option>
@@ -134,10 +134,10 @@ export const CaseItem = ({
                 id={priorityId}
                 value={priority}
                 onChange={(event) =>
-                  setPriority(event.target.value as CasePriority)
+                  setPriority(event.target.value as TicketPriority)
                 }
               >
-                {CASE_PRIORITIES.map((option) => (
+                {TICKET_PRIORITIES.map((option) => (
                   <option key={option} value={option}>
                     {option}
                   </option>
@@ -157,7 +157,11 @@ export const CaseItem = ({
           </div>
 
           <div className={styles.actions}>
-            <button type="submit" disabled={submitting} className={styles.primaryButton}>
+            <button
+              type="submit"
+              disabled={submitting}
+              className={styles.primaryButton}
+            >
               {submitting ? "Saving..." : "Save"}
             </button>
             <button
@@ -183,29 +187,29 @@ export const CaseItem = ({
   return (
     <li className={styles.item}>
       <div className={styles.header}>
-        <h3 className={styles.title}>{caseItem.title}</h3>
-        <StatusBadge status={caseItem.status} />
+        <h3 className={styles.title}>{ticket.title}</h3>
+        <StatusBadge status={ticket.status} />
       </div>
 
       <dl className={styles.meta}>
         <div>
           <dt>Priority</dt>
-          <dd>{caseItem.priority}</dd>
+          <dd>{ticket.priority}</dd>
         </div>
         <div>
           <dt>Assignee</dt>
-          <dd>{caseItem.assignee ?? "Unassigned"}</dd>
+          <dd>{ticket.assignee ?? "Unassigned"}</dd>
         </div>
         <div>
           <dt>Updated</dt>
-          <dd>{formatDate(caseItem.updatedAt)}</dd>
+          <dd>{formatDate(ticket.updatedAt)}</dd>
         </div>
       </dl>
 
       <div className={styles.actions}>
         {confirmingDelete ? (
           <>
-            <span className={styles.confirmText}>Delete this case?</span>
+            <span className={styles.confirmText}>Delete this ticket?</span>
             <button
               type="button"
               onClick={handleDelete}

@@ -1,33 +1,41 @@
 import { useId } from "react";
-import { CASE_STATUSES, type Case, type StatusFilter } from "../../types/case";
-import { CaseItem } from "../case-item/case-item";
-import styles from "./case-list.module.css";
+import { TICKET_STATUSES, type StatusFilter, type Ticket } from "../../types/ticket";
+import { TicketItem } from "../ticket-item/ticket-item";
+import styles from "./ticket-list.module.css";
 
-interface CaseListProps {
-  cases: Case[];
+interface TicketListProps {
+  tickets: Ticket[];
   loading: boolean;
   error: string | null;
   filter: StatusFilter;
   onFilterChange: (filter: StatusFilter) => void;
-  onUpdated: (updated: Case) => void;
+  onUpdated: (updated: Ticket) => void;
   onDeleted: (id: string) => void;
 }
 
-export const CaseList = ({
-  cases,
+const FILTER_LABELS: Record<StatusFilter, string> = {
+  all: "All",
+  new: "New",
+  "in-progress": "In progress",
+  "waiting-on-customer": "Waiting on customer",
+  resolved: "Resolved",
+};
+
+export const TicketList = ({
+  tickets,
   loading,
   error,
   filter,
   onFilterChange,
   onUpdated,
   onDeleted,
-}: CaseListProps): React.JSX.Element => {
+}: TicketListProps): React.JSX.Element => {
   const filterId = useId();
 
   return (
     <section>
       <div className={styles.toolbar}>
-        <h2 className={styles.heading}>Cases</h2>
+        <h2 className={styles.heading}>Tickets</h2>
         <div className={styles.filterField}>
           <label htmlFor={filterId}>Status</label>
           <select
@@ -38,7 +46,7 @@ export const CaseList = ({
             }
           >
             <option value="all">All</option>
-            {CASE_STATUSES.map((option) => (
+            {TICKET_STATUSES.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>
@@ -47,7 +55,7 @@ export const CaseList = ({
         </div>
       </div>
 
-      {loading && <p>Loading cases...</p>}
+      {loading && <p>Loading tickets...</p>}
 
       {!loading && error && (
         <p role="alert" className={styles.error}>
@@ -55,20 +63,20 @@ export const CaseList = ({
         </p>
       )}
 
-      {!loading && !error && cases.length === 0 && (
+      {!loading && !error && tickets.length === 0 && (
         <p className={styles.empty}>
           {filter === "all"
-            ? "No cases yet. Create one above to get started."
-            : `No ${filter} cases.`}
+            ? "No tickets yet. Create one above to get started."
+            : `No ${FILTER_LABELS[filter].toLowerCase()} tickets.`}
         </p>
       )}
 
-      {!loading && !error && cases.length > 0 && (
+      {!loading && !error && tickets.length > 0 && (
         <ul className={styles.list}>
-          {cases.map((caseItem) => (
-            <CaseItem
-              key={caseItem.id}
-              caseItem={caseItem}
+          {tickets.map((ticket) => (
+            <TicketItem
+              key={ticket.id}
+              ticket={ticket}
               onUpdated={onUpdated}
               onDeleted={onDeleted}
             />

@@ -1,27 +1,29 @@
 import { useId, useState } from "react";
 import {
-  CASE_PRIORITIES,
-  CASE_STATUSES,
-  type Case,
-  type CasePriority,
-  type CaseStatus,
-} from "../../types/case";
-import { createCase } from "../../services/cases-service";
-import styles from "./case-form.module.css";
+  TICKET_PRIORITIES,
+  TICKET_STATUSES,
+  type Ticket,
+  type TicketPriority,
+  type TicketStatus,
+} from "../../types/ticket";
+import { createTicket } from "../../services/tickets-service";
+import styles from "./ticket-form.module.css";
 
-interface CaseFormProps {
-  onCreated: (created: Case) => void;
+interface TicketFormProps {
+  onCreated: (created: Ticket) => void;
 }
 
-export const CaseForm = ({ onCreated }: CaseFormProps): React.JSX.Element => {
+export const TicketForm = ({
+  onCreated,
+}: TicketFormProps): React.JSX.Element => {
   const titleId = useId();
   const statusId = useId();
   const priorityId = useId();
   const assigneeId = useId();
 
   const [title, setTitle] = useState("");
-  const [status, setStatus] = useState<CaseStatus>("open");
-  const [priority, setPriority] = useState<CasePriority>("medium");
+  const [status, setStatus] = useState<TicketStatus>("new");
+  const [priority, setPriority] = useState<TicketPriority>("medium");
   const [assignee, setAssignee] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +35,7 @@ export const CaseForm = ({ onCreated }: CaseFormProps): React.JSX.Element => {
     event.preventDefault();
 
     if (title.trim() === "") {
-      setError("Title is required");
+      setError("Subject is required");
       return;
     }
 
@@ -42,7 +44,7 @@ export const CaseForm = ({ onCreated }: CaseFormProps): React.JSX.Element => {
     setSuccessMessage(null);
 
     try {
-      const created = await createCase({
+      const created = await createTicket({
         title: title.trim(),
         status,
         priority,
@@ -50,12 +52,12 @@ export const CaseForm = ({ onCreated }: CaseFormProps): React.JSX.Element => {
       });
       onCreated(created);
       setTitle("");
-      setStatus("open");
+      setStatus("new");
       setPriority("medium");
       setAssignee("");
-      setSuccessMessage(`Case "${created.title}" created`);
+      setSuccessMessage(`Ticket "${created.title}" created`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create case");
+      setError(err instanceof Error ? err.message : "Failed to create ticket");
     } finally {
       setSubmitting(false);
     }
@@ -63,10 +65,10 @@ export const CaseForm = ({ onCreated }: CaseFormProps): React.JSX.Element => {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit} noValidate>
-      <h2 className={styles.heading}>New case</h2>
+      <h2 className={styles.heading}>New ticket</h2>
 
       <div className={styles.field}>
-        <label htmlFor={titleId}>Title</label>
+        <label htmlFor={titleId}>Subject</label>
         <input
           id={titleId}
           type="text"
@@ -82,9 +84,9 @@ export const CaseForm = ({ onCreated }: CaseFormProps): React.JSX.Element => {
           <select
             id={statusId}
             value={status}
-            onChange={(event) => setStatus(event.target.value as CaseStatus)}
+            onChange={(event) => setStatus(event.target.value as TicketStatus)}
           >
-            {CASE_STATUSES.map((option) => (
+            {TICKET_STATUSES.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>
@@ -98,10 +100,10 @@ export const CaseForm = ({ onCreated }: CaseFormProps): React.JSX.Element => {
             id={priorityId}
             value={priority}
             onChange={(event) =>
-              setPriority(event.target.value as CasePriority)
+              setPriority(event.target.value as TicketPriority)
             }
           >
-            {CASE_PRIORITIES.map((option) => (
+            {TICKET_PRIORITIES.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>
@@ -121,7 +123,7 @@ export const CaseForm = ({ onCreated }: CaseFormProps): React.JSX.Element => {
       </div>
 
       <button type="submit" className={styles.submit} disabled={submitting}>
-        {submitting ? "Creating..." : "Create case"}
+        {submitting ? "Creating..." : "Create ticket"}
       </button>
 
       <div role="status" aria-live="polite" className={styles.feedback}>

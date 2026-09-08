@@ -1,11 +1,11 @@
 // supertest lets you make HTTP requests against the app without a running server
 import request from "supertest";
 import app from "../app";
-import { caseStore } from "../store";
+import { ticketStore } from "../store";
 
 beforeEach(() => {
   // Resets the store before every test so no state leaks between them. Essential for reliable tests.
-  caseStore.clear();
+  ticketStore.clear();
 });
 
 describe("GET /health", () => {
@@ -16,46 +16,48 @@ describe("GET /health", () => {
   });
 });
 
-describe("GET /cases", () => {
-  it("returns an empty array when no cases exist", async () => {
+describe("GET /tickets", () => {
+  it("returns an empty array when no tickets exist", async () => {
     // fires a real request through the full Express stack
-    const res = await request(app).get("/cases");
+    const res = await request(app).get("/tickets");
     expect(res.status).toBe(200);
     expect(res.body).toEqual([]);
   });
 
-  it("returns all cases", async () => {
-    await request(app).post("/cases").send({ title: "Case one" });
-    await request(app).post("/cases").send({ title: "Case two" });
+  it("returns all tickets", async () => {
+    await request(app).post("/tickets").send({ title: "Ticket one" });
+    await request(app).post("/tickets").send({ title: "Ticket two" });
 
-    const res = await request(app).get("/cases");
+    const res = await request(app).get("/tickets");
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(2);
   });
 
   it("filters by status", async () => {
     await request(app)
-      .post("/cases")
-      .send({ title: "Open case", status: "open" });
+      .post("/tickets")
+      .send({ title: "New ticket", status: "new" });
     await request(app)
-      .post("/cases")
-      .send({ title: "Closed case", status: "closed" });
+      .post("/tickets")
+      .send({ title: "Resolved ticket", status: "resolved" });
 
-    const res = await request(app).get("/cases?status=open");
+    const res = await request(app).get("/tickets?status=new");
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);
-    expect(res.body[0].status).toBe("open");
+    expect(res.body[0].status).toBe("new");
   });
 });
 
-describe("POST /cases", () => {
-  it("creates a case with defaults", async () => {
-    const res = await request(app).post("/cases").send({ title: "New case" });
+describe("POST /tickets", () => {
+  it("creates a ticket with defaults", async () => {
+    const res = await request(app)
+      .post("/tickets")
+      .send({ title: "New ticket" });
     expect(res.status).toBe(201);
     // checks that the response contains at least those fields. It doesn't fail if there are extra fields like id or createdAt
     expect(res.body).toMatchObject({
-      title: "New case",
-      status: "open",
+      title: "New ticket",
+      status: "new",
       priority: "medium",
       assignee: null,
     });
@@ -65,93 +67,97 @@ describe("POST /cases", () => {
   });
 
   it("returns 400 when title is invalid", async () => {
-    const res = await request(app).post("/cases").send({ title: "" });
+    const res = await request(app).post("/tickets").send({ title: "" });
     expect(res.status).toBe(400);
     expect(res.body.message).toBeDefined();
   });
 
   it("returns 400 when title is missing", async () => {
-    const res = await request(app).post("/cases").send({ priority: "high" });
+    const res = await request(app)
+      .post("/tickets")
+      .send({ priority: "high" });
     expect(res.status).toBe(400);
     expect(res.body.message).toBeDefined();
   });
 
   it("returns 400 for an invalid status", async () => {
     const res = await request(app)
-      .post("/cases")
+      .post("/tickets")
       .send({ title: "Bad status", status: "unknown" });
     expect(res.status).toBe(400);
   });
 
   it("returns 400 for an invalid priority", async () => {
     const res = await request(app)
-      .post("/cases")
+      .post("/tickets")
       .send({ title: "Bad priority", priority: "invalid" });
     expect(res.status).toBe(400);
   });
 });
 
-describe("GET /cases/:id", () => {
-  it("returns case by :id", async () => {
+describe("GET /tickets/:id", () => {
+  it("returns ticket by :id", async () => {
     const created = await request(app)
-      .post("/cases")
-      .send({ title: "Case one" });
+      .post("/tickets")
+      .send({ title: "Ticket one" });
     const id = created.body.id;
-    const res = await request(app).get(`/cases/${id}`);
+    const res = await request(app).get(`/tickets/${id}`);
     expect(res.status).toBe(200);
     expect(res.body.id).toBe(id);
-    expect(res.body.title).toBe("Case one");
+    expect(res.body.title).toBe("Ticket one");
   });
 
   it("returns 404 for a non-existent id", async () => {
-    const res = await request(app).get("/cases/non-existent");
+    const res = await request(app).get("/tickets/non-existent");
     expect(res.status).toBe(404);
     expect(res.body.message).toBeDefined();
   });
 });
 
-describe("PATCH /cases/:id", () => {
-  const newTitle = "Case Two";
-  it("patches case with :id", async () => {
+describe("PATCH /tickets/:id", () => {
+  const newTitle = "Ticket Two";
+  it("patches ticket with :id", async () => {
     const created = await request(app)
-      .post("/cases")
-      .send({ title: "Case one" });
+      .post("/tickets")
+      .send({ title: "Ticket one" });
     const id = created.body.id;
     const patched = await request(app)
-      .patch(`/cases/${id}`)
+      .patch(`/tickets/${id}`)
       .send({ title: newTitle });
     expect(patched.status).toBe(200);
     expect(patched.body.title).toBe(newTitle);
-    expect(patched.body.status).toBe("open");
+    expect(patched.body.status).toBe("new");
   });
 
   it("returns 404 for a non-existent id", async () => {
     const patched = await request(app)
-      .patch("/cases/non-existent")
+      .patch("/tickets/non-existent")
       .send({ title: newTitle });
     expect(patched.status).toBe(404);
     expect(patched.body.message).toBeDefined();
   });
 
-  it("updates case :id with assignee", async () => {
+  it("updates ticket :id with assignee", async () => {
     const assignee = "Kerry";
     const created = await request(app)
-      .post("/cases")
-      .send({ title: "Case one" });
-    const id = created.body.id;
-    const patched = await request(app).patch(`/cases/${id}`).send({ assignee });
-    expect(patched.status).toBe(200);
-    expect(patched.body.assignee).toBe(assignee);
-    expect(patched.body.status).toBe("open");
-  });
-
-  it("updates case :id with null assignee", async () => {
-    const created = await request(app)
-      .post("/cases")
-      .send({ title: "Case one" });
+      .post("/tickets")
+      .send({ title: "Ticket one" });
     const id = created.body.id;
     const patched = await request(app)
-      .patch(`/cases/${id}`)
+      .patch(`/tickets/${id}`)
+      .send({ assignee });
+    expect(patched.status).toBe(200);
+    expect(patched.body.assignee).toBe(assignee);
+    expect(patched.body.status).toBe("new");
+  });
+
+  it("updates ticket :id with null assignee", async () => {
+    const created = await request(app)
+      .post("/tickets")
+      .send({ title: "Ticket one" });
+    const id = created.body.id;
+    const patched = await request(app)
+      .patch(`/tickets/${id}`)
       .send({ assignee: null });
     expect(patched.status).toBe(200);
     expect(patched.body.assignee).toBeNull();
@@ -159,11 +165,11 @@ describe("PATCH /cases/:id", () => {
 
   it("returns 400 for an invalid status", async () => {
     const created = await request(app)
-      .post("/cases")
-      .send({ title: "Case one" });
+      .post("/tickets")
+      .send({ title: "Ticket one" });
     const id = created.body.id;
     const patched = await request(app)
-      .patch(`/cases/${id}`)
+      .patch(`/tickets/${id}`)
       .send({ status: "banana" });
     expect(patched.status).toBe(400);
     expect(patched.body.message).toBeDefined();
@@ -171,11 +177,11 @@ describe("PATCH /cases/:id", () => {
 
   it("returns 400 for an empty status", async () => {
     const created = await request(app)
-      .post("/cases")
-      .send({ title: "Case one" });
+      .post("/tickets")
+      .send({ title: "Ticket one" });
     const id = created.body.id;
     const patched = await request(app)
-      .patch(`/cases/${id}`)
+      .patch(`/tickets/${id}`)
       .send({ status: "" });
     expect(patched.status).toBe(400);
     expect(patched.body.message).toBeDefined();
@@ -183,11 +189,11 @@ describe("PATCH /cases/:id", () => {
 
   it("returns 400 for an empty title", async () => {
     const created = await request(app)
-      .post("/cases")
-      .send({ title: "Case one" });
+      .post("/tickets")
+      .send({ title: "Ticket one" });
     const id = created.body.id;
     const patched = await request(app)
-      .patch(`/cases/${id}`)
+      .patch(`/tickets/${id}`)
       .send({ title: "" });
     expect(patched.status).toBe(400);
     expect(patched.body.message).toBeDefined();
@@ -195,11 +201,11 @@ describe("PATCH /cases/:id", () => {
 
   it("returns 400 for an invalid priority", async () => {
     const created = await request(app)
-      .post("/cases")
-      .send({ title: "Case one" });
+      .post("/tickets")
+      .send({ title: "Ticket one" });
     const id = created.body.id;
     const patched = await request(app)
-      .patch(`/cases/${id}`)
+      .patch(`/tickets/${id}`)
       .send({ priority: "banana" });
     expect(patched.status).toBe(400);
     expect(patched.body.message).toBeDefined();
@@ -207,31 +213,31 @@ describe("PATCH /cases/:id", () => {
 
   it("returns 400 for an empty priority", async () => {
     const created = await request(app)
-      .post("/cases")
-      .send({ title: "Case one" });
+      .post("/tickets")
+      .send({ title: "Ticket one" });
     const id = created.body.id;
     const patched = await request(app)
-      .patch(`/cases/${id}`)
+      .patch(`/tickets/${id}`)
       .send({ priority: "" });
     expect(patched.status).toBe(400);
     expect(patched.body.message).toBeDefined();
   });
 });
 
-describe("DELETE /cases/:id", () => {
-  it("deletes case with :id", async () => {
+describe("DELETE /tickets/:id", () => {
+  it("deletes ticket with :id", async () => {
     const created = await request(app)
-      .post("/cases")
-      .send({ title: "Case one" });
+      .post("/tickets")
+      .send({ title: "Ticket one" });
     const id = created.body.id;
-    const deleted = await request(app).delete(`/cases/${id}`);
+    const deleted = await request(app).delete(`/tickets/${id}`);
     expect(deleted.status).toBe(204);
-    const res = await request(app).get(`/cases/${id}`);
+    const res = await request(app).get(`/tickets/${id}`);
     expect(res.status).toBe(404);
     expect(res.body.message).toBeDefined();
   });
   it("returns 404 for a non-existent id", async () => {
-    const res = await request(app).delete("/cases/non-existent");
+    const res = await request(app).delete("/tickets/non-existent");
     expect(res.status).toBe(404);
     expect(res.body.message).toBeDefined();
   });

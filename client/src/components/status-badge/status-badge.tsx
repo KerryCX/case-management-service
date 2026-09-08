@@ -1,17 +1,20 @@
-import type { CaseStatus } from "../../types/case";
+import type { TicketStatus } from "../../types/ticket";
 import styles from "./status-badge.module.css";
 
-const STATUS_LABELS: Record<CaseStatus, string> = {
-  open: "Open",
+const STATUS_LABELS: Record<TicketStatus, string> = {
+  new: "New",
   "in-progress": "In progress",
-  closed: "Closed",
+  "waiting-on-customer": "Waiting on customer",
+  resolved: "Resolved",
 };
 
 interface StatusBadgeProps {
-  status: CaseStatus;
+  status: TicketStatus;
 }
 
-export const StatusBadge = ({ status }: StatusBadgeProps): React.JSX.Element => {
+export const StatusBadge = ({
+  status,
+}: StatusBadgeProps): React.JSX.Element => {
   return (
     <span className={`${styles.badge} ${styles[status]}`}>
       {STATUS_LABELS[status]}

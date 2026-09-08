@@ -4,5 +4,5 @@ import app from "./app";
 const PORT = process.env.PORT ?? 3000;
 
 app.listen(PORT, () => {
-  console.log(`Case management service running on http://localhost:${PORT}`);
+  console.log(`TicketZero running on http://localhost:${PORT}`);
 });

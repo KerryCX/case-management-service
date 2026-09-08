@@ -1,8 +1,8 @@
 // Express types every middleware function receives.
 import { Request, Response, NextFunction } from "express";
-import { CASE_STATUSES, CASE_PRIORITIES } from "../types/case";
+import { TICKET_STATUSES, TICKET_PRIORITIES } from "../types/ticket";
 
-export const validateCreateCase = (
+export const validateCreateTicket = (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -17,16 +17,16 @@ export const validateCreateCase = (
   }
 
   // TypeScript types don't exist at runtime, so we need the actual array to validate incoming values
-  if (status !== undefined && !CASE_STATUSES.includes(status)) {
+  if (status !== undefined && !TICKET_STATUSES.includes(status)) {
     res
       .status(400)
-      .json({ message: `status must be one of: ${CASE_STATUSES.join(", ")}` });
+      .json({ message: `status must be one of: ${TICKET_STATUSES.join(", ")}` });
     return;
   }
 
-  if (priority !== undefined && !CASE_PRIORITIES.includes(priority)) {
+  if (priority !== undefined && !TICKET_PRIORITIES.includes(priority)) {
     res.status(400).json({
-      message: `priority must be one of: ${CASE_PRIORITIES.join(", ")}`,
+      message: `priority must be one of: ${TICKET_PRIORITIES.join(", ")}`,
     });
     return;
   }
@@ -35,7 +35,7 @@ export const validateCreateCase = (
 };
 
 // PATCH only needs to send the fields being changed
-export const validateUpdateCase = (
+export const validateUpdateTicket = (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -50,16 +50,16 @@ export const validateUpdateCase = (
     return;
   }
 
-  if (status !== undefined && !CASE_STATUSES.includes(status)) {
+  if (status !== undefined && !TICKET_STATUSES.includes(status)) {
     res
       .status(400)
-      .json({ message: `status must be one of: ${CASE_STATUSES.join(", ")}` });
+      .json({ message: `status must be one of: ${TICKET_STATUSES.join(", ")}` });
     return;
   }
 
-  if (priority !== undefined && !CASE_PRIORITIES.includes(priority)) {
+  if (priority !== undefined && !TICKET_PRIORITIES.includes(priority)) {
     res.status(400).json({
-      message: `priority must be one of: ${CASE_PRIORITIES.join(", ")}`,
+      message: `priority must be one of: ${TICKET_PRIORITIES.join(", ")}`,
     });
     return;
   }

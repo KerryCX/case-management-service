@@ -8,7 +8,7 @@
   white-space: nowrap;
 }
 
-.open {
+.new {
   background: var(--accent-contrast);
   color: var(--accent);
   border: 1px solid var(--accent);
@@ -20,7 +20,13 @@
   border: 1px solid var(--warning);
 }
 
-.closed {
+.waiting-on-customer {
+  background: var(--waiting-bg);
+  color: var(--waiting);
+  border: 1px solid var(--waiting);
+}
+
+.resolved {
   background: var(--success-bg);
   color: var(--success);
   border: 1px solid var(--success);

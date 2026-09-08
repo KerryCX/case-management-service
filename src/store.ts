@@ -1,50 +1,50 @@
-import { Case } from "./types/case";
+import { Ticket } from "./types/ticket";
 
 // Simple in-memory store - replace with a DB adapter in a real service
-class CaseStore {
-  // JavaScript Map - uses case id as key, Case object as value. Faster lookups than an array
-  private cases: Map<string, Case> = new Map(); // private - only accessible inside the class
-  findAll(status?: string): Case[] {
-    const all = Array.from(this.cases.values());
+class TicketStore {
+  // JavaScript Map - uses ticket id as key, Ticket object as value. Faster lookups than an array
+  private tickets: Map<string, Ticket> = new Map(); // private - only accessible inside the class
+  findAll(status?: string): Ticket[] {
+    const all = Array.from(this.tickets.values());
     if (status) {
-      return all.filter((c) => c.status === status);
+      return all.filter((t) => t.status === status);
     }
     return all;
   }
 
-  findById(id: string): Case | undefined {
-    return this.cases.get(id);
+  findById(id: string): Ticket | undefined {
+    return this.tickets.get(id);
   }
 
-  create(caseData: Case): Case {
-    this.cases.set(caseData.id, caseData);
-    return caseData;
+  create(ticketData: Ticket): Ticket {
+    this.tickets.set(ticketData.id, ticketData);
+    return ticketData;
   }
 
-  // a built-in TypeScript utility type meaning "an object with any subset of Case's fields".
+  // a built-in TypeScript utility type meaning "an object with any subset of Ticket's fields".
   // Perfect for PATCH updates where not every field is required
-  update(id: string, updates: Partial<Case>): Case | undefined {
-    const existing = this.cases.get(id);
+  update(id: string, updates: Partial<Ticket>): Ticket | undefined {
+    const existing = this.tickets.get(id);
     if (!existing) return undefined;
-    // spread operator merges the existing case with the incoming updates, with updates winning on any clashing fields
-    const updated: Case = {
+    // spread operator merges the existing ticket with the incoming updates, with updates winning on any clashing fields
+    const updated: Ticket = {
       ...existing,
       ...updates,
       id,
       updatedAt: new Date().toISOString(),
     };
-    this.cases.set(id, updated);
+    this.tickets.set(id, updated);
     return updated;
   }
 
   delete(id: string): boolean {
-    return this.cases.delete(id);
+    return this.tickets.delete(id);
   }
 
   // Test helper - reset state between tests - only exists for tests.
   clear(): void {
-    this.cases.clear();
+    this.tickets.clear();
   }
 }
 
-export const caseStore = new CaseStore();
+export const ticketStore = new TicketStore();

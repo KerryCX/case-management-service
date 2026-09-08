@@ -1,7 +1,7 @@
 import path from "path";
 import express from "express";
 import cors from "cors";
-import casesRouter from "./routes/cases";
+import ticketsRouter from "./routes/tickets";
 
 const app = express();
 
@@ -19,7 +19,7 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
-app.use("/cases", casesRouter);
+app.use("/tickets", ticketsRouter);
 
 /* Serves the built React client (client/dist, produced by `npm run build` inside
 client/) so the whole app runs from this one server and port. If the client

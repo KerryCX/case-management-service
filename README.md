@@ -1,6 +1,6 @@
-# Case Management Service
+# TicketZero
 
-Full-stack case management app: a RESTful API (Node.js, Express, TypeScript) with a React + TypeScript client in `client/`.
+A support ticket tracker with a Getting Things Done slant: everything starts as `new` and the goal is to clear the queue. RESTful API (Node.js, Express, TypeScript) with a React + TypeScript client in `client/`.
 
 ## Setup
 
@@ -21,7 +21,7 @@ npm run dev                 # API, with hot reload, on http://localhost:3000
 cd client && npm run dev    # client, with hot reload, on http://localhost:5173
 ```
 
-Open `http://localhost:5173`. The client's dev server forwards `/cases` and `/health` requests to the API on port 3000 (see `client/vite.config.ts`), so there's no CORS setup to think about.
+Open `http://localhost:5173`. The client's dev server forwards `/tickets` and `/health` requests to the API on port 3000 (see `client/vite.config.ts`), so there's no CORS setup to think about.
 
 ## Run (as one combined app)
 
@@ -30,7 +30,7 @@ Build the client, then start the API, which serves the built client itself:
 ```bash
 cd client && npm run build  # outputs client/dist
 cd ..
-npm run build               # compiles the API
+npm run build:api           # compiles the API
 npm start                   # serves both from http://localhost:3000
 ```
 
@@ -38,9 +38,9 @@ Now `http://localhost:3000` shows the app directly instead of `Cannot GET /`. Th
 
 ## Deploying
 
-`npm run build` builds the client and the API together (it installs the client's dependencies, builds it, then compiles the API), so a host that just runs `npm install && npm run build && npm start` will work with no extra configuration. The server already reads `PORT` from the environment, falling back to 3000 locally, which is what most Node hosts (Render, Railway, Fly.io) expect.
+`npm run build` builds the client and the API together (it installs the client's dependencies, builds it, then compiles the API), so a host that just runs `npm install && npm run build && npm start` will work with no extra configuration. `build:api` is a fast path to compile just the API if you don't need to touch the client. The server already reads `PORT` from the environment, falling back to 3000 locally, which is what most Node hosts (Render, Railway, Fly.io) expect.
 
-One thing to know before relying on a deployed copy: cases are stored in memory only, there's no database. Any restart, redeploy, or the server sleeping on a free tier wipes all cases back to empty. Fine for a live demo, not for anything you need to persist.
+One thing to know before relying on a deployed copy: tickets are stored in memory only, there's no database. Any restart, redeploy, or the server sleeping on a free tier wipes all tickets back to empty. Fine for a live demo, not for anything you need to persist.
 
 ## Test
 
@@ -53,78 +53,78 @@ The client doesn't have its own test suite yet.
 
 ## Using the API directly
 
-The client covers day-to-day use, but the API can still be called directly if you want to script something or use Postman/Insomnia. A browser address bar can only send GET requests, so you can view `/cases` and `/cases/:id` just by typing the URL in, creating, updating, or deleting a case needs a tool that can send POST/PATCH/DELETE requests, `curl` in a terminal being the simplest.
+The client covers day-to-day use, but the API can still be called directly if you want to script something or use Postman/Insomnia. A browser address bar can only send GET requests, so you can view `/tickets` and `/tickets/:id` just by typing the URL in, creating, updating, or deleting a ticket needs a tool that can send POST/PATCH/DELETE requests, `curl` in a terminal being the simplest.
 
 With the server running, here's the full flow using `curl`:
 
-**List all cases**
+**List all tickets**
 
 ```bash
-curl http://localhost:3000/cases
+curl http://localhost:3000/tickets
 ```
 
 Filter by status:
 
 ```bash
-curl "http://localhost:3000/cases?status=open"
+curl "http://localhost:3000/tickets?status=new"
 ```
 
-**Create a case**
+**Create a ticket**
 
 ```bash
-curl -X POST http://localhost:3000/cases \
+curl -X POST http://localhost:3000/tickets \
   -H "Content-Type: application/json" \
-  -d '{"title":"New case","status":"open","priority":"high"}'
+  -d '{"title":"Cannot reset password","status":"new","priority":"high"}'
 ```
 
-Only `title` is required, `status` defaults to `open`, `priority` defaults to `medium`, `assignee` defaults to `null`. The response includes the generated `id`, use it for the next two.
+Only `title` is required, `status` defaults to `new`, `priority` defaults to `medium`, `assignee` defaults to `null`. The response includes the generated `id`, use it for the next two.
 
-**Get a single case**
+**Get a single ticket**
 
 ```bash
-curl http://localhost:3000/cases/THE_ID
+curl http://localhost:3000/tickets/THE_ID
 ```
 
-**Update a case**
+**Update a ticket**
 
 ```bash
-curl -X PATCH http://localhost:3000/cases/THE_ID \
+curl -X PATCH http://localhost:3000/tickets/THE_ID \
   -H "Content-Type: application/json" \
-  -d '{"status":"closed"}'
+  -d '{"status":"resolved"}'
 ```
 
 Send only the fields you want to change.
 
-**Delete a case**
+**Delete a ticket**
 
 ```bash
-curl -X DELETE http://localhost:3000/cases/THE_ID
+curl -X DELETE http://localhost:3000/tickets/THE_ID
 ```
 
 ## API reference
 
 Base URL: `http://localhost:3000`
 
-| Method | Path       | Description                          |
-| ------ | ---------- | ------------------------------------ |
-| GET    | /cases     | List all cases (supports `?status=`) |
-| GET    | /cases/:id | Get a single case                    |
-| POST   | /cases     | Create a case                        |
-| PATCH  | /cases/:id | Update a case                        |
-| DELETE | /cases/:id | Delete a case                        |
+| Method | Path         | Description                            |
+| ------ | ------------ | --------------------------------------- |
+| GET    | /tickets     | List all tickets (supports `?status=`)  |
+| GET    | /tickets/:id | Get a single ticket                     |
+| POST   | /tickets     | Create a ticket                         |
+| PATCH  | /tickets/:id | Update a ticket                         |
+| DELETE | /tickets/:id | Delete a ticket                         |
 
-### Case fields
+### Ticket fields
 
-| Field       | Type                                | Required? | Notes                |
-| ----------- | ----------------------------------- | --------- | -------------------- |
-| `id`        | string                              | No        | Generated, read-only |
-| `title`     | string                              | Yes       | Non-empty            |
-| `status`    | `open` \| `in-progress` \| `closed` | No        | Defaults to `open`   |
-| `priority`  | `low` \| `medium` \| `high`         | No        | Defaults to `medium` |
-| `assignee`  | string or `null`                    | No        | Defaults to `null`   |
-| `createdAt` | ISO timestamp                       | No        | Generated, read-only |
-| `updatedAt` | ISO timestamp                       | No        | Generated, read-only |
+| Field       | Type                                                            | Required? | Notes                 |
+| ----------- | ---------------------------------------------------------------- | --------- | --------------------- |
+| `id`        | string                                                          | No        | Generated, read-only  |
+| `title`     | string                                                          | Yes       | Non-empty             |
+| `status`    | `new` \| `in-progress` \| `waiting-on-customer` \| `resolved`   | No        | Defaults to `new`     |
+| `priority`  | `low` \| `medium` \| `high`                                     | No        | Defaults to `medium`  |
+| `assignee`  | string or `null`                                                | No        | Defaults to `null`    |
+| `createdAt` | ISO timestamp                                                   | No        | Generated, read-only  |
+| `updatedAt` | ISO timestamp                                                   | No        | Generated, read-only  |
 
 ### Errors
 
-Invalid input (missing `title`, or a `status`/`priority` outside the allowed values) returns `400` with a `message` explaining what's wrong. A request for a case `id` that doesn't exist returns `404` with `{"message":"Case not found"}`.
+Invalid input (missing `title`, or a `status`/`priority` outside the allowed values) returns `400` with a `message` explaining what's wrong. A request for a ticket `id` that doesn't exist returns `404` with `{"message":"Ticket not found"}`.
