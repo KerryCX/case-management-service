@@ -1,0 +1,45 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.heading {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.filterField {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filterField label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.filterField select {
+  background: var(--bg-input);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.35rem 0.55rem;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.empty {
+  color: var(--text-muted);
+}
+
+.error {
+  color: var(--danger);
+}

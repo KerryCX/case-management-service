@@ -1,35 +1,59 @@
 # Case Management Service
 
-RESTful API for managing caseworker cases. Built with Node.js, Express, and TypeScript.
-
-This is a JSON API with no web page attached. Visiting `http://localhost:3000/` in a browser will show `Cannot GET /`, that's expected, there's no route for the root path. See "Using the API" below for how to actually talk to it.
+Full-stack case management app: a RESTful API (Node.js, Express, TypeScript) with a React + TypeScript client in `client/`.
 
 ## Setup
 
 ```bash
-npm install
+npm install         # installs the API's dependencies
+cd client && npm install   # installs the client's dependencies
 ```
 
-## Run
+## Run (development)
+
+Two servers, in two terminals:
 
 ```bash
-npm run dev        # development (hot reload)
-npm run build      # compile TypeScript
-npm start          # run compiled output
+npm run dev                 # API, with hot reload, on http://localhost:3000
 ```
 
-The server runs at `http://localhost:3000`.
+```bash
+cd client && npm run dev    # client, with hot reload, on http://localhost:5173
+```
+
+Open `http://localhost:5173`. The client's dev server forwards `/cases` and `/health` requests to the API on port 3000 (see `client/vite.config.ts`), so there's no CORS setup to think about.
+
+## Run (as one combined app)
+
+Build the client, then start the API, which serves the built client itself:
+
+```bash
+cd client && npm run build  # outputs client/dist
+cd ..
+npm run build               # compiles the API
+npm start                   # serves both from http://localhost:3000
+```
+
+Now `http://localhost:3000` shows the app directly instead of `Cannot GET /`. This is the shape you'd deploy: one server, one port.
+
+## Deploying
+
+`npm run build` builds the client and the API together (it installs the client's dependencies, builds it, then compiles the API), so a host that just runs `npm install && npm run build && npm start` will work with no extra configuration. The server already reads `PORT` from the environment, falling back to 3000 locally, which is what most Node hosts (Render, Railway, Fly.io) expect.
+
+One thing to know before relying on a deployed copy: cases are stored in memory only, there's no database. Any restart, redeploy, or the server sleeping on a free tier wipes all cases back to empty. Fine for a live demo, not for anything you need to persist.
 
 ## Test
 
 ```bash
-npm test           # run tests with coverage
+npm test           # API tests, with coverage
 npm run test:watch # watch mode
 ```
 
-## Using the API
+The client doesn't have its own test suite yet.
 
-A browser address bar can only send GET requests, so you can view `/cases` and `/cases/:id` just by typing the URL in. Creating, updating, or deleting a case needs a tool that can send POST/PATCH/DELETE requests, `curl` in a terminal, or a GUI client like Postman, Insomnia, or the Thunder Client extension in VS Code.
+## Using the API directly
+
+The client covers day-to-day use, but the API can still be called directly if you want to script something or use Postman/Insomnia. A browser address bar can only send GET requests, so you can view `/cases` and `/cases/:id` just by typing the URL in, creating, updating, or deleting a case needs a tool that can send POST/PATCH/DELETE requests, `curl` in a terminal being the simplest.
 
 With the server running, here's the full flow using `curl`:
 
@@ -91,15 +115,15 @@ Base URL: `http://localhost:3000`
 
 ### Case fields
 
-| Field       | Type                                 | Required? | Notes                 |
-| ----------- | ------------------------------------ | --------- | --------------------- |
-| `id`        | string                               | No        | Generated, read-only  |
-| `title`     | string                               | Yes       | Non-empty             |
-| `status`    | `open` \| `in-progress` \| `closed`  | No        | Defaults to `open`    |
-| `priority`  | `low` \| `medium` \| `high`          | No        | Defaults to `medium`  |
-| `assignee`  | string or `null`                     | No        | Defaults to `null`    |
-| `createdAt` | ISO timestamp                        | No        | Generated, read-only  |
-| `updatedAt` | ISO timestamp                        | No        | Generated, read-only  |
+| Field       | Type                                | Required? | Notes                |
+| ----------- | ----------------------------------- | --------- | -------------------- |
+| `id`        | string                              | No        | Generated, read-only |
+| `title`     | string                              | Yes       | Non-empty            |
+| `status`    | `open` \| `in-progress` \| `closed` | No        | Defaults to `open`   |
+| `priority`  | `low` \| `medium` \| `high`         | No        | Defaults to `medium` |
+| `assignee`  | string or `null`                    | No        | Defaults to `null`   |
+| `createdAt` | ISO timestamp                       | No        | Generated, read-only |
+| `updatedAt` | ISO timestamp                       | No        | Generated, read-only |
 
 ### Errors
 

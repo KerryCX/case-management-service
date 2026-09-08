@@ -1,0 +1,27 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.open {
+  background: var(--accent-contrast);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.in-progress {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
+.closed {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
